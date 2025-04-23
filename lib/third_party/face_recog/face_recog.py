@@ -61,7 +61,7 @@ class FaceDetector:
             for face_encoding in face_encodings:
                 # See if the face is a match for the known face(s)
                 matches = face_recognition.compare_faces(known_face_encodings, face_encoding, tolerance = self.tolerance)
-                name = "NA"
+                name = "N/A"
 
                 # # If a match was found in known_face_encodings, just use the first one.
                 # if True in matches:
@@ -70,7 +70,7 @@ class FaceDetector:
 
                 # Or instead, use the known face with the smallest distance to the new face
                 face_distances = face_recognition.face_distance(known_face_encodings, face_encoding)
-                best_match_index = numpy.argmin(face_distances)
+                best_match_index = np.argmin(face_distances)
                 if matches[best_match_index]:
                     name = known_face_names[best_match_index]
                 face_names.append(name)
@@ -88,7 +88,7 @@ class FaceDetector:
         if self.recognition:
             face_names = [f'face_name@{_}' for _ in face_names]
         else:
-            face_names = ['face_name@NA' for _ in range(len(face_locations))]
+            face_names = ['face_name@Off' for _ in range(len(face_locations))]
         
         detections = None
         labels = face_names

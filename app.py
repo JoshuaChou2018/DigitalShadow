@@ -10,6 +10,7 @@ import os
 from PIL import Image
 import re
 import supervision as sv
+import argparse
 
 BOUNDING_BOX_ANNOTATOR = sv.BoundingBoxAnnotator(thickness = 5)
 LABEL_ANNOTATOR = sv.LabelAnnotator(text_color=sv.Color.BLACK, text_scale=0.5, text_thickness=1)
@@ -53,11 +54,11 @@ def annotate_cv2_frame(frame, detections, labels, cad_threshold = False):
     return image
 
 class DigitalShadow:
-    def __init__(self):
+    def __init__(self, livecad_model = None, recog = None, recog_ref_path=None):
         self.model_cad = cad_detector.cad_detector_vit(
-            diff_model_root = './model/livecad_face_20240905'
+            diff_model_root = livecad_model
         )
-        self.model_face_recog = face_recog.FaceDetector(recognition=False, user_face_reference_img_path='../../user_profile')
+        self.model_face_recog = face_recog.FaceDetector(recognition=recog, user_face_reference_img_path=recog_ref_path, tolerance = 0.6)
         self.risks = []
         self.risks_buffer = 20
         
@@ -99,10 +100,26 @@ class DigitalShadow:
         return annotate_frame_rgb, cad_risk
     
 if __name__ == '__main__':
-    DS = DigitalShadow()
+    
+    parser = argparse.ArgumentParser(description="DigitalShadow", add_help=False)
+    parser.add_argument('--video',
+                        help='path/to/video',
+                        default='./test_data/crowd.mp4')
+    parser.add_argument('--livecad_model',
+                        help='path/to/livecad/model',
+                        default='./model/cad_beitv2_face_20240905')
+    parser.add_argument('--recog',
+                        help='perform face recognition or not',
+                        default=False)
+    parser.add_argument('--recog_ref_path',
+                        help='path to face reference for face recognition',
+                        default='./user_profile')
+    args = parser.parse_args()
+    
+    DS = DigitalShadow(livecad_model = args.livecad_model, recog = args.recog, recog_ref_path = args.recog_ref_path)
     
     if True:
-        video_path = f'./test_data/crowd.mp4'
+        video_path = args.video
         video_log_dir = video_path + '.log'
         os.makedirs(video_log_dir, exist_ok=True)
         print(video_path)
